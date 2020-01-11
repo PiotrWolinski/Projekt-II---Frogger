@@ -241,7 +241,7 @@ void addLog(int& dFromLast, int& counter,  int speed, double delta, int row)
 void addTurtle(int& dFromLast, int& counter,  int speed, double delta, int row)
 {
 	int limit = (row == TURTLE_ROW_1)? LONG_TURTLE_NUMBER : SHORT_TURTLE_NUMBER;
-	int space = (row == TURTLE_ROW_1) ? 1330 : 880;
+	int space = (row == TURTLE_ROW_1) ? 2100 : 1500;
 	
 	if ((dFromLast > space && counter < limit) || !counter)
 	{
