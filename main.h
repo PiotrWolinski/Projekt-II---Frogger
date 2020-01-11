@@ -54,18 +54,6 @@ extern "C"
 #define FROG_START_POSITION_X (rand() % 13) * 400 + 200
 #define FROG_START_POSITION_Y SCREEN_HEIGHT * 10 - 200
 
-#define LOG_1_SPAWN_RATE 350
-#define LOG_2_SPAWN_RATE 400
-#define LOG_3_SPAWN_RATE 500
-#define TURTLE_1_SPAWN_RATE 400
-#define TURTLE_2_SPAWN_RATE 360
-
-#define CAR_1_SPAWN_RATE 400
-#define CAR_2_SPAWN_RATE 470
-#define CAR_3_SPAWN_RATE 530
-#define CAR_4_SPAWN_RATE 600
-#define CAR_5_SPAWN_RATE 500
-
 #define TURTLE_TYPE 2
 #define LOG_TYPE 1
 #define CAR_TYPE_RIGHT 3
@@ -93,23 +81,15 @@ struct logType {
 	}
 };
 
-struct turtleType2 {
-	int positionX;
-	int turtleType = 1;
-	int speed = 850;
-	turtleType2()
+struct turtleType {
+	int positionX1;
+	int positionX2;
+	int speed1 = 800;
+	int speed2 = 900;
+	turtleType()
 	{
-		positionX = SCREEN_WIDTH * 10 + 1200;
-	}
-};
-
-struct turtleType1 {
-	int positionX;
-	int turtleType = 2;
-	int speed = 800;
-	turtleType1()
-	{
-		positionX = SCREEN_WIDTH * 10 + 1600;
+		positionX1 = SCREEN_WIDTH * 10 + 1600;
+		positionX2 = SCREEN_WIDTH * 10 + 1200;
 	}
 };
 
@@ -196,8 +176,6 @@ struct gameType {
 	int carCounter5 = 0;
 	int dFromLastCar5 = 0;
 	int screenPositionC5 = 0;
-
-	int mainScreen = 0;
 };
 
 struct gameInfoType {
@@ -232,9 +210,9 @@ void checkDistance(int& distance, int type);
 
 int ifWin(frogType& frogger, int& win);
 
-int ifInWater(frogType& frogger, int& menu);
+int ifInWater(frogType& frogger);
 
-int ifHitByCar(frogType& frogger, int& menu);
+int ifHitByCar(frogType& frogger);
 
 void checkCarCollisionRight(frogType* frogger, int counter, carType1* car, int row);
 
@@ -242,15 +220,9 @@ void checkCarCollisionLeft(frogType* frogger, int counter, carType2* car, int ro
 
 void checkTruckCollision(frogType* frogger, int counter, truckType* truck);
 
-void checkLog1Collision(frogType* frogger, int counter, logType* row);
+void checkLogCollision(frogType* frogger, int counter, logType* row, int rowNumber);
 
-void checkLog2Collision(frogType* frogger, int counter, logType* row);
-
-void checkLog3Collision(frogType* frogger, int counter, logType* row);
-
-void checkTurtleCollision1(frogType* frogger, int counter, turtleType1* row);
-
-void checkTurtleCollision2(frogType* frogger, int counter, turtleType2* row);
+void checkTurtleCollision(frogType* frogger, int counter, turtleType* row, int rowNumber);
 
 void addLog(int& dFromLast, int& counter,  int speed, double delta, int row);
 
@@ -262,13 +234,11 @@ void moveFrog(frogType* frogger, int speed, double delta);
 
 void fpsThing(double& timer, double& fps, int& frames);
 
-int checkScreen(int& screen, int counter, int speed, double delta, int type);
-
-int checkTime(double time);
+int checkTime(gameInfoType* info, frogType* frogger);
 
 int checkLifes(int lifes);
 
-int checkDock(frogType* frogger, int* frogArray, int& score, int& docksLeft, int gameTime);
+int checkDock(frogType* frogger, int* frogArray,gameInfoType* info);
 
 void DrawString(SDL_Surface* screen, int x, int y, const char* text,
 	SDL_Surface* charset);

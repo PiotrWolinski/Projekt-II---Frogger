@@ -10,8 +10,8 @@ extern "C"
 #endif
 int main(int argc, char** argv) {
 	srand(time(NULL));
-	int t1, t2, frames, rc, msDelta, msTime, secCounter;
-	double delta, worldTime, fpsTimer, fps;
+	int t1, t2, frames, rc;
+	double delta, fpsTimer, fps;
 	SDL_Event event;
 	SDL_Surface* screen, * charset;
 	SDL_Surface* map;
@@ -206,57 +206,43 @@ int main(int argc, char** argv) {
 	frames = 0;
 	fpsTimer = 0;
 	fps = 0;
-	worldTime = 0;
-	msDelta = 0;
-	msTime = 0;
-	secCounter = 0;
+
+	//deklaruje wszystkie potrzebne w grze struktury
 
 	frogType* frogger = new frogType;
 
-	logType* logRow1 = new logType[SHORT_LOG_NUMBER]; //12 zamienie na stala (define)
+	logType* logRow1 = new logType[SHORT_LOG_NUMBER]; 
 	logType* logRow2 = new logType[LONG_LOG_NUMBER];
 	logType* logRow3 = new logType[SHORT_LOG_NUMBER];
 
-	turtleType1* turtleRow1 = new turtleType1[LONG_TURTLE_NUMBER];
-	turtleType2* turtleRow2 = new turtleType2[SHORT_TURTLE_NUMBER];
+	turtleType* turtleRow1 = new turtleType[LONG_TURTLE_NUMBER];
+	turtleType* turtleRow2 = new turtleType[SHORT_TURTLE_NUMBER];
 
 	carType1* carRow1 = new carType1[CAR_NUMBER];
 	carType2* carRow2 = new carType2[CAR_NUMBER];
 	carType1* carRow3 = new carType1[CAR_NUMBER];
 	carType2* carRow4 = new carType2[CAR_NUMBER];
-	truckType* carRow5 = new truckType[TRUCK_NUMBER]; //zamienie na define to wszystko
+	truckType* carRow5 = new truckType[TRUCK_NUMBER];
 
 	gameType* game = new gameType;
 
 	screenType* gameScreen = new screenType;
 
-	int frogArray[5] = {};
+	gameInfoType* info = new gameInfoType;
 
-	int win = 0;
-	int quit = 0;
-	int pause = 0;
-	int eog = 0; //end of game
-	int menu = 1;
-	int gameCounter = 0;
-	int lifes = LIFES_NUMBER;
-	int docksLeft = 5;
-	double gameTime = 0;
-	int score = 0;
+	int frogArray[5] = {};
 
 	int maxY = SCREEN_HEIGHT;
 
 	//tutaj zaczyna sie glowna petla rozgrywki
-	while (!quit) {
-		if (menu)
+	while (!info->quit) {
+		if (info->menu)
 		{
-			if (gameCounter > 0)
+			if (info->gameCounter > 0)
 			{
-				win = 0;
+				info->win = 0;
 				frogger = new frogType;
 			}
-
-			char option1[128];
-			char option2[128];
 
 			SDL_RenderClear(renderer);
 
@@ -265,25 +251,24 @@ int main(int argc, char** argv) {
 			sprintf(text, "MENU");
 			DrawString(screen, screen->w / 2 - strlen(text) * 8 / 2, SCREEN_HEIGHT / 2, text, charset);
 
-			if (gameCounter > 0)
+			if (info->gameCounter > 0)
 			{
-				char option3[128];
-				sprintf(option3, "Play again - press 1");
-				DrawString(screen, screen->w / 2 - strlen(option3) * 8 / 2, SCREEN_HEIGHT / 2 + 12, option3, charset);
+				sprintf(text, "Play again - press 1");
+				DrawString(screen, screen->w / 2 - strlen(text) * 8 / 2, SCREEN_HEIGHT / 2 + 12, text, charset);
 			}
 			else
 			{
-				sprintf(option1, "Play Frogger - press 1");
-				DrawString(screen, screen->w / 2 - strlen(option1) * 8 / 2, SCREEN_HEIGHT / 2 + 12, option1, charset);
+				sprintf(text, "Play Frogger - press 1");
+				DrawString(screen, screen->w / 2 - strlen(text) * 8 / 2, SCREEN_HEIGHT / 2 + 12, text, charset);
 			}
 
-			sprintf(option2, "Exit - press 2");
-			DrawString(screen, screen->w / 2 - strlen(option2) * 8 / 2, SCREEN_HEIGHT / 2 + 24, option2, charset);
+			sprintf(text, "Exit - press 2");
+			DrawString(screen, screen->w / 2 - strlen(text) * 8 / 2, SCREEN_HEIGHT / 2 + 36, text, charset);
 
-			if (score)
+			if (info->score)
 			{
-				sprintf(text, "Last score:  %d", score);
-				DrawString(screen, screen->w / 2 - strlen(text) * 8 / 2, SCREEN_HEIGHT / 2 + 36, text, charset);
+				sprintf(text, "Last score:  %d", info->score);
+				DrawString(screen, screen->w / 2 - strlen(text) * 8 / 2, SCREEN_HEIGHT / 2 + 24, text, charset);
 			}
 
 			SDL_UpdateTexture(scrtex, NULL, screen->pixels, screen->pitch);
@@ -292,12 +277,13 @@ int main(int argc, char** argv) {
 
 			t1 = SDL_GetTicks();
 
+			//obsluga eventow w menu
 			while (SDL_PollEvent(&event)) {
 				switch (event.type) {
 				case SDL_KEYDOWN:
 					if (event.key.keysym.sym == SDLK_ESCAPE || event.key.keysym.sym == SDLK_2)
 					{
-						quit = 1;
+						info->quit = 1;
 					}
 					else if (event.key.keysym.sym == SDLK_1)
 					{
@@ -305,25 +291,24 @@ int main(int argc, char** argv) {
 						{
 							frogArray[i] = 0;
 						}
-						win = 0;
-						gameTime = 0;
-						docksLeft = 5;
-						worldTime = 0;
-						lifes = LIFES_NUMBER;
+						info->win = 0;
+						info->gameTime = 0;
+						info->docksLeft = 5;
+						info->lifes = LIFES_NUMBER;
 						maxY = SCREEN_HEIGHT;
-						score = 0;
-						menu = 0;
+						info->score = 0;
+						info->menu = 0;
 					}
 					break;
 				case SDL_QUIT:
-					quit = 1;
+					info->quit = 1;
 					break;
 				};
 			};
 		}
-		else if (pause % 2 == 0 && eog == 0 && menu == 0)
+		else if (info->pause % 2 == 0 && !info->eog && !info->menu)
 		{
-			gameCounter++;
+			info->gameCounter++;
 			t2 = SDL_GetTicks();
 
 			resetCollisions(frogger);
@@ -331,24 +316,22 @@ int main(int argc, char** argv) {
 			// jaki uplyna³ od ostatniego narysowania ekranu
 			// delta to ten sam czas w sekundach
 			delta = (t2 - t1) * 0.001;
-			msDelta = t2 - t1;
 			t1 = t2;
-			msTime += msDelta;
-			worldTime += delta;
-			gameTime += delta;
+			info->gameTime += delta;
 
-			checkLog1Collision(frogger, game->logCounter1, logRow1); //pozmieniam te funkcje wspolne dla rzedow, zeby dzialaly
+			//sprawdzanie, czy jakiekolwiek kolizje wystapily
+			checkLogCollision(frogger, game->logCounter1, logRow1, LOG_ROW_1);
 
-			checkLog2Collision(frogger, game->logCounter2, logRow2); //wystarczy dodac odpowiedniego define'a do parametrow 
+			checkLogCollision(frogger, game->logCounter2, logRow2, LOG_ROW_2); 
 
-			checkLog3Collision(frogger, game->logCounter3, logRow3);
+			checkLogCollision(frogger, game->logCounter3, logRow3, LOG_ROW_3);
 
-			checkTurtleCollision1(frogger, game->turtleCounter1, turtleRow1);
+			checkTurtleCollision(frogger, game->turtleCounter1, turtleRow1, TURTLE_ROW_1);
 
-			checkTurtleCollision2(frogger, game->turtleCounter2, turtleRow2);
+			checkTurtleCollision(frogger, game->turtleCounter2, turtleRow2, TURTLE_ROW_2);
 
-			checkCarCollisionRight(frogger, game->carCounter1, carRow1, CAR_ROW_1); //zrobie z tego jedna duza funkcje, ktora bedzie sprawdzala
-																				//kolizje dla wszystkich samochodow
+			checkCarCollisionRight(frogger, game->carCounter1, carRow1, CAR_ROW_1);
+																				
 			checkCarCollisionLeft(frogger, game->carCounter2, carRow2, CAR_ROW_2);
 
 			checkCarCollisionRight(frogger, game->carCounter3, carRow3, CAR_ROW_3);
@@ -357,11 +340,12 @@ int main(int argc, char** argv) {
 
 			checkTruckCollision(frogger, game->carCounter5, carRow5);
 
+			//przesuwanie froggera razem z logiem/zolwiem
 			switch (frogger->positionY) //funkcje movefrog zmienie tak, zeby obslugiwala calego tego switcha
 			{
 			case (TURTLE_ROW_1):
 			{
-				moveFrog(frogger, (-1) * turtleRow1[0].speed, delta);
+				moveFrog(frogger, (-1) * turtleRow1[0].speed1, delta);
 				break;
 			}
 			case (LOG_ROW_1):
@@ -376,7 +360,7 @@ int main(int argc, char** argv) {
 			}
 			case (TURTLE_ROW_2):
 			{
-				moveFrog(frogger, (-1) * turtleRow2[0].speed, delta);
+				moveFrog(frogger, (-1) * turtleRow2[0].speed2, delta);
 				break;
 			}
 			case (LOG_ROW_3):
@@ -386,21 +370,15 @@ int main(int argc, char** argv) {
 			}
 			}
 
-			gameScreen->carScreen1 = checkScreen(game->screenPositionC1, game->carCounter1, carRow1[0].speed1, delta, CAR_TYPE);
-			gameScreen->carScreen2 = checkScreen(game->screenPositionC2, game->carCounter2, carRow2[0].speed1, delta, CAR_TYPE);
-			gameScreen->carScreen3 = checkScreen(game->screenPositionC3, game->carCounter3, carRow3[0].speed2, delta, CAR_TYPE);
-			gameScreen->carScreen4 = checkScreen(game->screenPositionC4, game->carCounter4, carRow4[0].speed2, delta, CAR_TYPE);
-			gameScreen->carScreen5 = checkScreen(game->screenPositionC5, game->carCounter5, carRow5[0].speed, delta, CAR_TYPE);
-
 			addLog(game->dFromLastLog1, game->logCounter1, logRow1[0].speed1, delta, LOG_ROW_1);
 
 			addLog(game->dFromLastLog2, game->logCounter2, logRow2[0].speed2, delta, LOG_ROW_2);
 
 			addLog(game->dFromLastLog3, game->logCounter3, logRow3[0].speed3, delta, LOG_ROW_3);
 
-			addTurtle(game->dFromLastTurtle1, game->turtleCounter1, turtleRow1[0].speed, delta, TURTLE_ROW_1);
+			addTurtle(game->dFromLastTurtle1, game->turtleCounter1, turtleRow1[0].speed1, delta, TURTLE_ROW_1);
 
-			addTurtle(game->dFromLastTurtle2, game->turtleCounter2, turtleRow2[0].speed, delta, TURTLE_ROW_2);
+			addTurtle(game->dFromLastTurtle2, game->turtleCounter2, turtleRow2[0].speed2, delta, TURTLE_ROW_2);
 
 			addCar(game->dFromLastCar1, game->carCounter1, carRow1[0].speed1, delta, CAR_ROW_1);
 
@@ -416,9 +394,9 @@ int main(int argc, char** argv) {
 				SCREEN_WIDTH / 2,
 				SCREEN_HEIGHT / 2 + 20);
 
+			//tutaj zaczyna sie rysowanie ruchomych elementow na planszy
 			for (int y = 0; y < game->logCounter1; y++)
 			{
-				//tutaj bede podawal numer danego loga z tablicy i przekazywal jego wspolrzedne do funckji
 				DrawMoving(screen, log1,
 					logRow1[y].positionX / 10,
 					LOG_ROW_1 / 10);
@@ -440,24 +418,23 @@ int main(int argc, char** argv) {
 
 			for (int y = 0; y < game->turtleCounter1; y++)
 			{
-				//tutaj bede podawal numer danego loga z tablicy i przekazywal jego wspolrzedne do funckji
 				DrawMoving(screen, turtle2,
-					turtleRow1[y].positionX / 10,
+					turtleRow1[y].positionX1 / 10,
 					TURTLE_ROW_1 / 10);
 
-				turtleRow1[y].positionX -= turtleRow1[0].speed * delta;
-				checkDistance(turtleRow1[y].positionX, TURTLE_TYPE);
+				turtleRow1[y].positionX1 -= turtleRow1[0].speed1 * delta;
+				checkDistance(turtleRow1[y].positionX1, TURTLE_TYPE);
 			}
 
 			for (int y = 0; y < game->turtleCounter2; y++)
 			{
 				//tutaj bede podawal numer danego loga z tablicy i przekazywal jego wspolrzedne do funckji
 				DrawMoving(screen, turtle1,
-					turtleRow2[y].positionX / 10,
+					turtleRow2[y].positionX2 / 10,
 					TURTLE_ROW_2 / 10);
 
-				turtleRow2[y].positionX -= turtleRow2[0].speed * delta;
-				checkDistance(turtleRow2[y].positionX, TURTLE_TYPE);
+				turtleRow2[y].positionX2 -= turtleRow2[0].speed2 * delta;
+				checkDistance(turtleRow2[y].positionX2, TURTLE_TYPE);
 			}
 
 			for (int y = 0; y < game->logCounter3; y++)
@@ -535,9 +512,10 @@ int main(int argc, char** argv) {
 				}
 			}
 
-			if ((int)gameTime < 3)
+			//odmierzanie czasu do rozpoczecia gry
+			if ((int)info->gameTime < 3)
 			{
-				sprintf(text, "Start za : %d", 3 - (int)gameTime);
+				sprintf(text, "Start za : %d", 3 - (int)info->gameTime);
 				DrawString(screen, screen->w / 2 - strlen(text) / 2 * 8, SCREEN_HEIGHT / 2 + 20, text, charset);
 			}
 
@@ -550,44 +528,47 @@ int main(int argc, char** argv) {
 
 			DrawRectangle(screen, 4, 4, SCREEN_WIDTH - 8, 36, czarny, czarny);
 
-			if ((int)gameTime < 43 && (int)gameTime >= 3)
+			//rysowanie paska czasu
+			if ((int)info->gameTime < 43 && (int)info->gameTime >= 3)
 			{
-				DrawRectangle(screen, 16, 16, 100 - 2 * ((int)gameTime - 3), 10, bialy, bialy);
+				DrawRectangle(screen, 16, 16, 100 - 2 * ((int)info->gameTime - 3), 10, bialy, bialy);
 			}
-			else if ((int)gameTime < 53 && (int)gameTime >= 3)
+			else if ((int)info->gameTime < 53 && (int)info->gameTime >= 3)
 			{
-				DrawRectangle(screen, 16, 16, 100 - 2 * ((int)gameTime - 3), 10, czerwony, czerwony);
+				DrawRectangle(screen, 16, 16, 100 - 2 * ((int)info->gameTime - 3), 10, czerwony, czerwony);
 			}
 
-			sprintf(text, "Lifes left: %d", lifes);
+			sprintf(text, "Lifes left: %d", info->lifes);
 			DrawString(screen, screen->w / 2 - strlen(text) * 8 / 2, 16, text, charset);
 
-			sprintf(text, "Score: %d", score);
+			sprintf(text, "Score: %d", info->score);
 			DrawString(screen, screen->w / 2 - strlen(text) * 8 / 2 + 100, 16, text, charset);
 
 			SDL_UpdateTexture(scrtex, NULL, screen->pixels, screen->pitch);
 			SDL_RenderCopy(renderer, scrtex, NULL, NULL);
 			SDL_RenderPresent(renderer);
 
-			if (ifWin(*frogger, win) && docksLeft != 0)
+			//gracz doszedl do gniazda i sa jeszcze gniazda wolne
+			if (ifWin(*frogger, info->win) && info->docksLeft != 0)
 			{
-				win = 0;
-				if (docksLeft != 0)
+				info->win = 0;
+				if (info->docksLeft != 0)
 				{
-					if (!checkDock(frogger, frogArray, score, docksLeft, gameTime))
+					if (!checkDock(frogger, frogArray, info))
 					{
-						lifes--;
+						info->lifes--;
 					}
-					gameTime = 0;
+					info->gameTime = 0;
 					frogger = new frogType;
 					maxY = SCREEN_HEIGHT;
 				}
 			}
 
-			if (docksLeft == 0)
+			//nie ma juz gniazd wolnych
+			if (info->docksLeft == 0)
 			{
-				win = 1;
-				menu = 1;
+				info->win = 1;
+				info->menu = 1;
 				SDL_Delay(1000);
 
 				SDL_RenderClear(renderer);
@@ -604,26 +585,24 @@ int main(int argc, char** argv) {
 				SDL_Delay(2000);
 			}
 
-			if (checkTime(gameTime))
+			//utrata zycia i rozpoczecie od nowa, jesli czas sie skonczy
+			if (checkTime(info, frogger))
 			{
-				gameTime = 0;
-				lifes--;
 				frogger = new frogType;
 			}
 
 			//sprawdza czy gracz powinien umrzec, jak wypadnie poza pole
-			if (((ifInWater(*frogger, menu) || ifHitByCar(*frogger, menu)) && !win) && checkLifes(lifes))
+			if (((ifInWater(*frogger) || ifHitByCar(*frogger)) && !info->win) && checkLifes(info->lifes))
 			{
-				gameTime = 0;
-				menu = 0;
-				lifes--;
+				info->gameTime = 0;
+				info->lifes--;
 				frogger = new frogType;
 				maxY = SCREEN_HEIGHT;
 			}
 
-			if (!checkLifes(lifes))
+			if (!checkLifes(info->lifes))
 			{
-				menu = 1;
+				info->menu = 1;
 				SDL_Delay(1000);
 
 				SDL_RenderClear(renderer);
@@ -641,12 +620,12 @@ int main(int argc, char** argv) {
 			}
 		}
 
-		else if (pause % 2 == 1)
+		else if (info->pause % 2 == 1)
 		{
 			t1 = SDL_GetTicks();
 			t2 = SDL_GetTicks();
 		}
-		else if (eog == 1)
+		else if (info->eog)
 		{
 			t1 = SDL_GetTicks();
 
@@ -664,16 +643,16 @@ int main(int argc, char** argv) {
 				case SDL_KEYDOWN:
 					if (event.key.keysym.sym == SDLK_y)
 					{
-						eog = 0;
-						menu = 1;
+						info->eog = 0;
+						info->menu = 1;
 					}
 					else if (event.key.keysym.sym == SDLK_n)
 					{
-						eog = 0;
+						info->eog = 0;
 					}
 					break;
 				case SDL_QUIT:
-					quit = 1;
+					info->quit = 1;
 					break;
 				};
 			};
@@ -682,16 +661,16 @@ int main(int argc, char** argv) {
 		while (SDL_PollEvent(&event)) {
 			switch (event.type) {
 			case SDL_KEYDOWN:
-				if (event.key.keysym.sym == SDLK_ESCAPE) quit = 1;
-				else if (event.key.keysym.sym == SDLK_q && pause % 2 == 0)
+				if (event.key.keysym.sym == SDLK_ESCAPE) info->quit = 1;
+				else if (event.key.keysym.sym == SDLK_q && info->pause % 2 == 0)
 				{
-					eog = 1;
+					info->eog = 1;
 				}
 				else if (event.key.keysym.sym == SDLK_p)
 				{
-					pause++;
+					info->pause++;
 				}
-				else if (event.key.keysym.sym == SDLK_UP && pause % 2 == 0 && (int)gameTime >= 3)
+				else if (event.key.keysym.sym == SDLK_UP && info->pause % 2 == 0 && (int)info->gameTime >= 3)
 				{
 					if (frogger->positionY < 1100)
 					{
@@ -700,11 +679,11 @@ int main(int argc, char** argv) {
 					frogger->positionY -= 430;
 					if (frogger->positionY / 10 < maxY && frogger->positionY > FINISH_LINE)
 					{
-						score += 10;
+						info->score += 10;
 						maxY = frogger->positionY / 10;
 					}
 				}
-				else if (event.key.keysym.sym == SDLK_DOWN && pause % 2 == 0 && (int)gameTime >= 3)
+				else if (event.key.keysym.sym == SDLK_DOWN && info->pause % 2 == 0 && (int)info->gameTime >= 3)
 				{
 					if (frogger->positionY > SCREEN_HEIGHT * 10 - 300)
 					{
@@ -712,7 +691,7 @@ int main(int argc, char** argv) {
 					}
 					frogger->positionY += 430;
 				}
-				else if (event.key.keysym.sym == SDLK_RIGHT && pause % 2 == 0 && (int)gameTime >= 3)
+				else if (event.key.keysym.sym == SDLK_RIGHT && info->pause % 2 == 0 && (int)info->gameTime >= 3)
 				{
 					if (frogger->positionX > SCREEN_WIDTH * 10 - 300)
 					{
@@ -720,7 +699,7 @@ int main(int argc, char** argv) {
 					}
 					frogger->positionX += 400;
 				}
-				else if (event.key.keysym.sym == SDLK_LEFT && pause % 2 == 0 && (int)gameTime >= 3)
+				else if (event.key.keysym.sym == SDLK_LEFT && info->pause % 2 == 0 && (int)info->gameTime >= 3)
 				{
 					if (frogger->positionX < 300)
 					{
@@ -731,7 +710,7 @@ int main(int argc, char** argv) {
 				break;
 
 			case SDL_QUIT:
-				quit = 1;
+				info->quit = 1;
 				break;
 			};
 		};

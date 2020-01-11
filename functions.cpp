@@ -59,6 +59,7 @@ void checkDistance(int& distance, int type)
 	}
 }
 
+//sprawdza czy gracz zmiescil sie w dockach
 int ifWin(frogType& frogger, int& win)
 {
 	if (frogger.positionY == FINISH_LINE)
@@ -77,7 +78,8 @@ int ifWin(frogType& frogger, int& win)
 	return 0;
 }
 
-int ifInWater(frogType& frogger, int& menu)
+//sprawdza czy gracz wpadl do wody
+int ifInWater(frogType& frogger)
 {
 	if (frogger.logCollision == 0 && frogger.positionY < RIVER &&
 		frogger.positionY >= FINISH_LINE ||
@@ -85,23 +87,23 @@ int ifInWater(frogType& frogger, int& menu)
 		frogger.positionX < 0
 		)
 	{
-		menu = 1;
 		return 1;
 	}
 	return 0;
 }
 
-int ifHitByCar(frogType& frogger, int& menu)
+//sprawadza czy gracz zostal przejechany
+int ifHitByCar(frogType& frogger)
 {
 	if (frogger.carCollision == 1 && frogger.positionY > RIVER&&
 		frogger.positionY < FROG_START_POSITION_Y)
 	{
-		menu = 1;
 		return 1;
 	}
 	return 0;
 }
 
+//sprawdza kolizje dla samochodow jadacych z prawej
 void checkCarCollisionRight(frogType* frogger, int counter, carType1* car, int row)
 {
 	for (int i = 0; i < counter; i++)
@@ -116,6 +118,7 @@ void checkCarCollisionRight(frogType* frogger, int counter, carType1* car, int r
 	}
 }
 
+//sprawdza kolizje dla samochodow jadacych z lewej
 void checkCarCollisionLeft(frogType* frogger, int counter, carType2* car, int row)
 {
 	for (int i = 0; i < counter; i++)
@@ -130,6 +133,7 @@ void checkCarCollisionLeft(frogType* frogger, int counter, carType2* car, int ro
 	}
 }
 
+//sprawdza kolizje dla ciezarowki
 void checkTruckCollision(frogType* frogger, int counter, truckType* truck)
 {
 	for (int i = 0; i < counter; i++)
@@ -144,13 +148,19 @@ void checkTruckCollision(frogType* frogger, int counter, truckType* truck)
 	}
 }
 
-void checkLog1Collision(frogType* frogger, int counter, logType* row)
+//sprawdza kolizje dla pni
+void checkLogCollision(frogType* frogger, int counter, logType* row, int rowNumber)
 {
+	int length = 1200;
+	if (rowNumber == LOG_ROW_2)
+	{
+		length = 1600;
+	}
 	for (int x = 0; x < counter; x++)
 	{
 		if (frogger->positionX < row[x].positionX &&
-			frogger->positionX > row[x].positionX - 1200 &&
-			frogger->positionY == LOG_ROW_1)
+			frogger->positionX > row[x].positionX - length &&
+			frogger->positionY == rowNumber)
 		{
 			frogger->logCollision = 1;
 			break;
@@ -158,86 +168,60 @@ void checkLog1Collision(frogType* frogger, int counter, logType* row)
 	}
 }
 
-void checkLog2Collision(frogType* frogger, int counter, logType* row)
+//sprawdza kolizje dla zolwi
+void checkTurtleCollision(frogType* frogger, int counter, turtleType* row, int rowNumber)
 {
-	for (int x = 0; x < counter; x++)
+	int length = (rowNumber == TURTLE_ROW_1) ? 1600 : 1200;
+	if (rowNumber == TURTLE_ROW_1)
 	{
-		if (frogger->positionX < row[x].positionX &&
-			frogger->positionX > row[x].positionX - 1600 &&
-			frogger->positionY == LOG_ROW_2)
+		for (int x = 0; x < counter; x++)
 		{
-			frogger->logCollision = 1;
-			break;
+			if (frogger->positionX < row[x].positionX1 &&
+				frogger->positionX > row[x].positionX1 - length &&
+				frogger->positionY == rowNumber)
+			{
+				frogger->logCollision = 1;
+				break;
+			}
 		}
 	}
-}
-
-void checkLog3Collision(frogType* frogger, int counter, logType* row)
-{
-	for (int x = 0; x < counter; x++)
+	else
 	{
-		if (frogger->positionX < row[x].positionX &&
-			frogger->positionX > row[x].positionX - 1200 &&
-			frogger->positionY == LOG_ROW_3)
+		for (int x = 0; x < counter; x++)
 		{
-			frogger->logCollision = 1;
-			break;
+			if (frogger->positionX < row[x].positionX2 &&
+				frogger->positionX > row[x].positionX2 - length &&
+				frogger->positionY == rowNumber)
+			{
+				frogger->logCollision = 1;
+				break;
+			}
 		}
 	}
+	
 }
 
-void checkTurtleCollision1(frogType* frogger, int counter, turtleType1* row)
-{
-	for (int x = 0; x < counter; x++)
-	{
-		if (frogger->positionX < row[x].positionX &&
-			frogger->positionX > row[x].positionX - 1600 &&
-			frogger->positionY == TURTLE_ROW_1)
-		{
-			frogger->logCollision = 1;
-			break;
-		}
-	}
-}
-
-void checkTurtleCollision2(frogType* frogger, int counter, turtleType2* row)
-{
-	for (int x = 0; x < counter; x++)
-	{
-		if (frogger->positionX < row[x].positionX &&
-			frogger->positionX > row[x].positionX - 1200 &&
-			frogger->positionY == TURTLE_ROW_2)
-		{
-			frogger->logCollision = 1;
-			break;
-		}
-	}
-}
-
+//dodaje kolejny pien do tablicy, jesli jest to mozliwe
 void addLog(int& dFromLast, int& counter,  int speed, double delta, int row)
 {
-	int spawnRate = 0;
 	int distance = 0;
 	int limit = 0;
 	switch (row)
 	{
 	case (LOG_ROW_1):
 	{
-		spawnRate = LOG_1_SPAWN_RATE;
 		distance = -1200;
 		limit = 5;
 		break;
 	}
 	case (LOG_ROW_2):
 	{
-		spawnRate = LOG_2_SPAWN_RATE;
 		distance = -1600;
 		limit = 4;
 		break;
 	}
 	case (LOG_ROW_3):
 	{
-		spawnRate = LOG_3_SPAWN_RATE;
 		distance = -1200;
 		limit = 5;
 		break;
@@ -253,6 +237,7 @@ void addLog(int& dFromLast, int& counter,  int speed, double delta, int row)
 	dFromLast += speed * delta;
 }
 
+//dodaje kolejnego zolwia do tablicy, jesli jest to mozliwe
 void addTurtle(int& dFromLast, int& counter,  int speed, double delta, int row)
 {
 	int distance = 0;
@@ -283,6 +268,7 @@ void addTurtle(int& dFromLast, int& counter,  int speed, double delta, int row)
 	dFromLast += speed * delta;
 }
 
+//dodaje kolejny samochod do tablicy, jesli jest to mozliwe
 void addCar(int& dFromLast, int& counter, int speed, double delta, int row)
 {
 	int space = 1120;
@@ -307,6 +293,7 @@ void addCar(int& dFromLast, int& counter, int speed, double delta, int row)
 	dFromLast += speed * delta;
 }
 
+//porusza zabe razem z pniem/zolwiem
 void moveFrog(frogType* frogger, int speed, double delta)
 {
 	if (frogger->logCollision)
@@ -315,6 +302,7 @@ void moveFrog(frogType* frogger, int speed, double delta)
 	}
 }
 
+//kontroluje fpsy
 void fpsThing(double& timer, double& fps, int& frames)
 {
 	if (timer > 0.5) {
@@ -324,31 +312,19 @@ void fpsThing(double& timer, double& fps, int& frames)
 	}
 }
 
-//jesli ekran sie nie przewinal, zwraca 1 
-int checkScreen(int& screen, int counter, int speed, double delta, int type)
+//sprawdza czas gry
+int checkTime(gameInfoType* info, frogType* frogger)
 {
-	int distance = 1600; //domyslnie dla loga 
-	if (type == CAR_TYPE)
+	if ((int)info->gameTime >= 53)
 	{
-		distance = 800;
-	}
-	if (screen < (SCREEN_WIDTH * 10 - 2* distance + 400) * 2 && counter > 0)
-	{
-		screen += speed * delta;
+		info->gameTime = 0;
+		info->lifes--;
 		return 1;
 	}
 	return 0;
 }
 
-int checkTime(double time)
-{
-	if ((int)time >= 53)
-	{
-		return 1;
-	}
-	return 0;
-}
-
+//sprawdza zycia gracza
 int checkLifes(int lifes)
 {
 	if (lifes == 0)
@@ -360,15 +336,15 @@ int checkLifes(int lifes)
 
 //zwraca prawde, jesli dock jest wolny i zaba w nim wyladowala
 //jesli dock jest zajety, to zwraca 0
-int checkDock(frogType* frogger, int* frogArray, int& score, int& docksLeft, int gameTime) 
+int checkDock(frogType* frogger, int* frogArray, gameInfoType* info) 
 {
 	if (frogger->positionX >= DOCK_1_LEFT && frogger->positionX <= DOCK_1_RIGHT)
 	{
 		if (frogArray[0] == 0) //podziele na mniejsze funkcje
 		{
-			docksLeft--;
+			info->docksLeft--;
 			frogArray[0] = (DOCK_1_LEFT + DOCK_1_RIGHT) / 2 / 10;
-			score += 50 + (53 - gameTime)*10;
+			info->score += 50 + (53 - info->gameTime)*10;
 			return 1;
 		}
 		return 0;
@@ -377,9 +353,9 @@ int checkDock(frogType* frogger, int* frogArray, int& score, int& docksLeft, int
 	{
 		if (frogArray[1] == 0)
 		{
-			docksLeft--;
+			info->docksLeft--;
 			frogArray[1] = (DOCK_2_LEFT + DOCK_2_RIGHT) / 2 / 10;
-			score += 50 + (53 - gameTime) * 10;
+			info->score += 50 + (53 - info->gameTime) * 10;
 			return 1;
 		}
 		return 0;
@@ -388,9 +364,9 @@ int checkDock(frogType* frogger, int* frogArray, int& score, int& docksLeft, int
 	{
 		if (frogArray[2] == 0)
 		{
-			docksLeft--;
+			info->docksLeft--;
 			frogArray[2] = (DOCK_3_LEFT + DOCK_3_RIGHT) / 2 / 10;
-			score += 50 + (53 - gameTime) * 10;
+			info->score += 50 + (53 - info->gameTime) * 10;
 			return 1;
 		}
 		return 0;
@@ -399,9 +375,9 @@ int checkDock(frogType* frogger, int* frogArray, int& score, int& docksLeft, int
 	{
 		if (frogArray[3] == 0)
 		{
-			docksLeft--;
+			info->docksLeft--;
 			frogArray[3] = (DOCK_4_LEFT + DOCK_4_RIGHT) / 2 / 10;
-			score += 50 + (53 - gameTime) * 10;
+			info->score += 50 + (53 - info->gameTime) * 10;
 			return 1;
 		}
 		return 0;
@@ -410,9 +386,9 @@ int checkDock(frogType* frogger, int* frogArray, int& score, int& docksLeft, int
 	{
 		if (frogArray[4] == 0)
 		{
-			docksLeft--;
+			info->docksLeft--;
 			frogArray[4] = (DOCK_5_LEFT + DOCK_5_RIGHT) / 2 / 10;
-			score += 50 + (53 - gameTime) * 10;
+			info->score += 50 + (53 - info->gameTime) * 10;
 			return 1;
 		}
 		return 0;
