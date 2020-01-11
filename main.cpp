@@ -624,6 +624,14 @@ int main(int argc, char** argv) {
 		{
 			t1 = SDL_GetTicks();
 			t2 = SDL_GetTicks();
+
+			sprintf(text, "PAUSED");
+			DrawRectangle(screen, SCREEN_WIDTH / 2 - strlen(text) * 8 / 2 - 10, SCREEN_HEIGHT / 2 - 10, strlen(text) * 8 + 20, 28, czarny, czarny);
+			DrawString(screen, screen->w / 2 - strlen(text) * 8 / 2, SCREEN_HEIGHT / 2, text, charset);
+
+			SDL_UpdateTexture(scrtex, NULL, screen->pixels, screen->pitch);
+			SDL_RenderCopy(renderer, scrtex, NULL, NULL);
+			SDL_RenderPresent(renderer);
 		}
 		else if (info->eog)
 		{

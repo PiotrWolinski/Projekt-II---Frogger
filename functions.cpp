@@ -240,30 +240,13 @@ void addLog(int& dFromLast, int& counter,  int speed, double delta, int row)
 //dodaje kolejnego zolwia do tablicy, jesli jest to mozliwe
 void addTurtle(int& dFromLast, int& counter,  int speed, double delta, int row)
 {
-	int distance = 0;
-	int limit = 0;
-	int space = 0;
-	switch (row)
-	{
-	case (TURTLE_ROW_1):
-	{
-		distance = -1600;
-		limit = LONG_TURTLE_NUMBER;
-		space = 800;
-		break;
-	}
-	case (TURTLE_ROW_2):
-	{
-		distance = -1200;
-		limit = SHORT_TURTLE_NUMBER;
-		space = 600;
-		break;
-	}
-	}
+	int limit = (row == TURTLE_ROW_1)? LONG_TURTLE_NUMBER : SHORT_TURTLE_NUMBER;
+	int space = (row == TURTLE_ROW_1) ? 1330 : 880;
+	
 	if ((dFromLast > space && counter < limit) || !counter)
 	{
-		counter++;
-		dFromLast = distance;
+		++counter;
+		dFromLast = 0;
 	}
 	dFromLast += speed * delta;
 }
@@ -272,12 +255,10 @@ void addTurtle(int& dFromLast, int& counter,  int speed, double delta, int row)
 void addCar(int& dFromLast, int& counter, int speed, double delta, int row)
 {
 	int space = 1120;
-	int distance = -400;
-	int limit = CAR_NUMBER;
+	int distance = (row == CAR_ROW_5) ? -800 : -400;
+	int limit = (row == CAR_ROW_5) ? TRUCK_NUMBER : CAR_NUMBER;
 	if (row == CAR_ROW_5)
 	{
-		limit = TRUCK_NUMBER;
-		distance = -800;
 		space = 1820;
 	}
 	if (row == CAR_ROW_2 || row == CAR_ROW_4)
